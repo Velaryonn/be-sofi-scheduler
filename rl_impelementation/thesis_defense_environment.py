@@ -30,14 +30,11 @@ class ThesisDefenseEnvironment:
         }
 
     def get_valid_actions(self, defense_id): # ACTION
-        """Menentukan action dalam penugasan sidang"""
         defense = self.schedule.loc[defense_id]
         valid_actions = []
 
         for lecturer_id in self.lecturer_expertise.keys():
-            # Check expertise match
             if defense['bidang'] in self.lecturer_expertise[lecturer_id]:
-                # Check time conflicts
                 has_conflict = False
                 if (defense['date'], defense['time']) in self.assignments:
                     if lecturer_id in self.assignments[(defense['date'], defense['time'])]:
@@ -49,7 +46,6 @@ class ThesisDefenseEnvironment:
         return valid_actions
 
     def calculate_assignment_reward(self, lecturer_id, defense_id): # REWARD
-        """Menentukan reward dalam penugasan sidang"""
         defense = self.schedule.loc[defense_id]
 
         # 1. Expertise Matching (0 to 3.0)
@@ -71,7 +67,6 @@ class ThesisDefenseEnvironment:
         return expertise_score + workload_penalty + conflict_penalty
 
     def step(self, defense_id, lecturer_id): # memperbarui status environment
-        """mengambil tindakan, menghitung reward, memperbarui status jadwal, dan mengembalikan status baru"""
         defense = self.schedule.loc[defense_id]
         reward = self.calculate_assignment_reward(lecturer_id, defense_id)
 
@@ -89,27 +84,3 @@ class ThesisDefenseEnvironment:
 
         done = len(self.current_state['remaining_defenses']) == 0
         return self.current_state, reward, done
-
-
-## Test the environment
-# print("Testing RL Environment:")
-# jadwal_df = pd.read_excel(jadwal_file_path)
-# env = ThesisDefenseEnvironment(jadwal_df, lecturer_expertise)
-
-# # Test case: Schedule first defense
-# test_defense_id = jadwal_df.index[0]
-# print(f"\nTesting assignment for defense {test_defense_id}:")
-# print("Defense details:", jadwal_df.loc[test_defense_id])
-
-# valid_actions = env.get_valid_actions(test_defense_id)
-# print(f"\nValid lecturers for this defense: {len(valid_actions)}")
-# print("Sample of valid lecturers:", valid_actions[:5])
-
-# if valid_actions:
-#     test_lecturer = valid_actions[0]
-#     new_state, reward, done = env.step(test_defense_id, test_lecturer)
-#     print(f"\nAssignment result:")
-#     print(f"Assigned lecturer: {test_lecturer}")
-#     print(f"Reward: {reward:.2f}")
-#     print(f"Done: {done}")
-#     print(f"Remaining defenses: {len(new_state['remaining_defenses'])}")
